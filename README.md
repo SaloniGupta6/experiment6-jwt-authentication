@@ -148,6 +148,8 @@ cd backend
 Backend will run at:
 http://localhost:8080
 
+https://experiment6-jwt-authentication-1.onrender.com 
+
 ---
 
 ## Frontendcd frontend
@@ -156,7 +158,12 @@ npm start
 Frontend will run at:
 http://localhost:3000
 
+https://experiment6-jwt-authentication.vercel.app
+
 ---
+
+##DEPLOYED LINK
+https://experiment6-jwt-authentication.vercel.app 
 
 # Learning Outcomes
 
