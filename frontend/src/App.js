@@ -15,7 +15,7 @@ function App() {
     try {
 
       const res = await axios.post(
-        "http://localhost:8080/api/detect-scam",
+        "https://experiment6-jwt-authentication-1.onrender.com/api/detect-scam",
         { message: message }
       );
 
@@ -33,7 +33,7 @@ function App() {
     try {
 
       const res = await axios.post(
-        "http://localhost:8080/api/detect-url",
+        "https://experiment6-jwt-authentication-1.onrender.com/api/detect-url",
         { url: url }
       );
 
