@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import axios from "axios";
-import GaugeChart from "react-gauge-chart";
 
 function App() {
 
@@ -135,12 +134,7 @@ function App() {
 
           <p>Type: {result.type}</p>
 
-          <GaugeChart
-            id="scam-gauge"
-            nrOfLevels={20}
-            percent={Number(result.scamProbability.replace("%","")) / 100}
-            textColor="#ffffff"
-          />
+
 
         </div>
 
