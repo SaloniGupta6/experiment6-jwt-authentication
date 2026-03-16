@@ -1,68 +1,182 @@
-🛡 ScamGuard – JWT Authentication Project
+# ScamGuard AI – JWT Authentication Backend
 
-A full-stack ScamGuard application demonstrating secure user authentication using JWT (JSON Web Tokens).
-This project features a backend API for authentication and a frontend for user interaction, designed for learning, testing, or hackathon purposes.
-🔑 Features
-User Authentication
-Secure login & registration
-Password hashing with bcrypt
-JWT-based token authentication
-Frontend
-User-friendly interface with login and dashboard
-Screenshots included in screenshots/ folder
-Backend
-REST API built with Python/Flask (or Node.js if applicable)
-JWT token validation for secure endpoints
-Security
-Tokens expire after a configurable time
-Sensitive data never stored in plaintext
-Clean Git History
-.gitignore configured for venv and node_modules
-BFG used to remove large files from history
-📂 Project Structure
+This project demonstrates **JWT (JSON Web Token) authentication using Spring Boot** as part of **Experiment 6**.
+
+The system allows users to authenticate using a username and password, receive a JWT token, and access protected routes using that token.
+
+---
+
+# Project Objective
+
+The goal of this project is to implement a **secure authentication mechanism** using JWT in a backend application and demonstrate how protected routes work.
+
+---
+
+# Technologies Used
+
+- Java
+- Spring Boot
+- Spring Security
+- JWT (JSON Web Tokens)
+- Maven
+- React (Frontend)
+- Python (AI scam detection module)
+- Postman (API testing)
+
+---
+
+# Project Structure
 scamguard/
-├─ backend/                 # API & server logic
-├─ frontend/                # React frontend
-├─ screenshots/             # App screenshots
-├─ venv/                    # Python virtual environment (ignored)
-├─ .gitignore               # Ignores node_modules, venv, .DS_Store
-└─ README.md                # Project documentation
-⚙️ Installation
-1. Clone the repository
-git clone https://github.com/SaloniGupta6/experiment6-jwt-authentication.git
-cd experiment6-jwt-authentication
-2. Setup Backend (Python/Flask example)
-cd backend
-python3 -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
+│
+├── backend/
+│   └── src/main/java/com/scamguard/backend
+│       ├── controller
+│       │   ├── AuthController.java
+│       │   ├── ScamController.java
+│       │   └── UrlController.java
+│       │
+│       ├── security
+│       │   ├── JwtFilter.java
+│       │   ├── JwtUtil.java
+│       │   └── SecurityConfig.java
+│       │
+│       └── BackendApplication.java
+│
+├── frontend/
+│   └── React application
+│
+├── ai-model/
+│   ├── train_model.py
+│   ├── ai_api.py
+│   ├── scam_model.pkl
+│   └── vectorizer.pkl
+│
+├── screenshots/
+│   ├── LOGIN.png
+│   ├── JWT_TOKEN.png
+│   └── PROTECTED_TOKEN.png
+│
+└── README.md
 
-pip install -r requirements.txt
-3. Setup Frontend (React)
-cd ../frontend
+---
+
+# JWT Authentication Flow
+
+1️⃣ User sends login request with username and password.
+Example Request:
+{
+“username”: “user123”,
+“password”: “password123”
+}
+---
+
+2️⃣ Server validates credentials and generates a JWT token.
+
+Example Response:
+{
+“message”: “Login successful”,
+“token”: “eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…”
+}
+---
+
+3️⃣ User sends token to access protected route.
+Header:
+---
+
+4️⃣ Server verifies token using JWT filter.
+
+If valid → Access granted.
+
+Example Response:
+{
+“message”: “Access granted to protected route”
+}
+---
+
+# API Endpoints
+
+| Endpoint | Method | Description |
+|--------|--------|--------|
+| `/login` | POST | Authenticate user and generate JWT token |
+| `/protected` | GET | Access protected resource with JWT token |
+| `/api/detect-scam` | POST | Detect scam messages using AI model |
+
+---
+
+# Postman Testing
+
+### Login Request
+POST http://localhost:8080/login
+Body:
+{
+“username”:“user123”,
+“password”:“password123”
+}
+---
+
+### Access Protected Route
+GET http://localhost:8080/protected
+Header:
+Authorization: Bearer 
+---
+
+# Screenshots
+
+### Login Request
+
+![Login](screenshots/LOGIN.png)
+
+---
+
+### JWT Token Generated
+
+![Token](screenshots/JWT_TOKEN.png)
+
+---
+
+### Protected Route Access
+
+![Protected](screenshots/PROTECTED_TOKEN.png)
+
+---
+
+# How to Run the Project
+
+## Backend
+cd backend
+./mvnw spring-boot:run
+Backend will run at:
+http://localhost:8080
+
+---
+
+## Frontendcd frontend
 npm install
 npm start
-The frontend runs on http://localhost:3000 and backend on http://localhost:5000 (default).
-🚀 Usage
-Register a new user on the frontend.
-Login to receive a JWT token.
-Access protected routes using your JWT.
-Explore backend API via Postman or your browser.
-🧰 Technologies Used
-Backend: Python, Flask, JWT, bcrypt
-Frontend: React.js, CSS, AOS animations
-Database: SQLite / MySQL / PostgreSQL (update if used)
-Version Control: Git, GitHub
-Other Tools: BFG Repo-Cleaner (for large file removal), Node.js, npm
-📸 Screenshots
-DETECTSCAM.png – Dashboard / Detection page
-LOGIN.png – Login page
-API.png – Example API request
-H2_CONSOLE.png – Backend database console view
-✅ Clean Git Practices
-.gitignore includes:
-venv/
-frontend/node_modules/
-.DS_Store
-Large files removed using BFG: node_modules and venv
-Reduced repo size for faster cloning
+Frontend will run at:
+http://localhost:3000
+
+---
+
+# Learning Outcomes
+
+- Understanding JWT authentication
+- Implementing protected routes
+- Securing APIs using tokens
+- Testing APIs with Postman
+- Managing backend authentication using Spring Security
+
+---
+
+# Author
+
+**Saloni Gupta**
+
+GitHub:  
+https://github.com/SaloniGupta6
+
+---
+
+# Experiment
+
+Experiment 6 – JWT Authentication using Spring Boot
