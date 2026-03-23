@@ -1,12 +1,34 @@
 package com.scamguard.backend.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "scan_records")
 public class ScanRecord {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String userEmail;
+
+    @Column(nullable = false)
     private String type;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String input;
+
+    @Column(nullable = false)
     private String riskType;
+
+    @Column(nullable = false)
     private String scamProbability;
+
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String safetyAdvice;
+
+    @Column(nullable = false)
     private String createdAt;
 
     public ScanRecord() {
@@ -21,6 +43,10 @@ public class ScanRecord {
         this.scamProbability = scamProbability;
         this.safetyAdvice = safetyAdvice;
         this.createdAt = createdAt;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getUserEmail() {

@@ -1,10 +1,28 @@
 package com.scamguard.backend.model;
 
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "scam_reports")
 public class ScamReport {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
     private String userEmail;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
+
+    @Column
     private String numberOrLink;
+
+    @Column(nullable = false)
     private String category;
+
+    @Column(nullable = false)
     private String createdAt;
 
     public ScamReport() {
@@ -16,6 +34,10 @@ public class ScamReport {
         this.numberOrLink = numberOrLink;
         this.category = category;
         this.createdAt = createdAt;
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public String getUserEmail() {

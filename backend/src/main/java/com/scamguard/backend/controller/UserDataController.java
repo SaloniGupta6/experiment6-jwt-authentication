@@ -2,36 +2,38 @@ package com.scamguard.backend.controller;
 
 import com.scamguard.backend.model.ScanRecord;
 import com.scamguard.backend.model.ScamReport;
+import com.scamguard.backend.repository.ScanRecordRepository;
+import com.scamguard.backend.repository.ScamReportRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class UserDataController {
 
-    private final List<ScanRecord> scanHistory = new ArrayList<>();
-    private final List<ScamReport> scamReports = new ArrayList<>();
+    private final ScanRecordRepository scanRecordRepository;
+    private final ScamReportRepository scamReportRepository;
+
+    public UserDataController(ScanRecordRepository scanRecordRepository,
+                              ScamReportRepository scamReportRepository) {
+        this.scanRecordRepository = scanRecordRepository;
+        this.scamReportRepository = scamReportRepository;
+    }
 
     @PostMapping("/save-scan")
     public ScanRecord saveScan(@RequestBody ScanRecord scanRecord) {
         if (scanRecord.getCreatedAt() == null || scanRecord.getCreatedAt().isEmpty()) {
             scanRecord.setCreatedAt(LocalDateTime.now().toString());
         }
-        scanHistory.add(0, scanRecord);
-        return scanRecord;
+        return scanRecordRepository.save(scanRecord);
     }
 
     @GetMapping("/history")
     public List<ScanRecord> getHistory(@RequestParam String email) {
-        return scanHistory.stream()
-                .filter(item -> item.getUserEmail() != null &&
-                        item.getUserEmail().equalsIgnoreCase(email))
-                .collect(Collectors.toList());
+        return scanRecordRepository.findByUserEmailIgnoreCaseOrderByIdDesc(email);
     }
 
     @PostMapping("/report-scam")
@@ -39,15 +41,11 @@ public class UserDataController {
         if (scamReport.getCreatedAt() == null || scamReport.getCreatedAt().isEmpty()) {
             scamReport.setCreatedAt(LocalDateTime.now().toString());
         }
-        scamReports.add(0, scamReport);
-        return scamReport;
+        return scamReportRepository.save(scamReport);
     }
 
     @GetMapping("/reports")
     public List<ScamReport> getReports(@RequestParam String email) {
-        return scamReports.stream()
-                .filter(item -> item.getUserEmail() != null &&
-                        item.getUserEmail().equalsIgnoreCase(email))
-                .collect(Collectors.toList());
+        return scamReportRepository.findByUserEmailIgnoreCaseOrderByIdDesc(email);
     }
 }
