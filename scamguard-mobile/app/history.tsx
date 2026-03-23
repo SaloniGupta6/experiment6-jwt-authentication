@@ -10,13 +10,24 @@ import {
 } from "react-native";
 import { useFocusEffect } from "expo-router";
 import api from "../src/services/api";
+import { getUser } from "../src/utils/authStorage";
 
 export default function HistoryScreen() {
   const [history, setHistory] = useState<any[]>([]);
 
   const loadHistory = async () => {
     try {
-      const res = await api.get("/api/history");
+      const user = await getUser();
+
+      if (!user?.email) {
+        setHistory([]);
+        return;
+      }
+
+      const res = await api.get("/api/history", {
+        params: { email: user.email },
+      });
+
       setHistory(res.data || []);
     } catch (error: any) {
       console.log("HISTORY API ERROR:", error?.response?.data || error.message);
@@ -31,16 +42,16 @@ export default function HistoryScreen() {
 
   const handleClear = () => {
     if (Platform.OS === "web") {
-      window.alert("Clear from backend is not implemented yet.");
+      window.alert("User-specific clear is not implemented yet.");
     } else {
-      Alert.alert("Info", "Clear from backend is not implemented yet.");
+      Alert.alert("Info", "User-specific clear is not implemented yet.");
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>🕘 Scan History</Text>
+        <Text style={styles.title}>🕘 Your Scan History</Text>
 
         <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
           <Text style={styles.clearBtnText}>Clear</Text>
@@ -51,7 +62,7 @@ export default function HistoryScreen() {
         <View style={styles.emptyCard}>
           <Text style={styles.emptyTitle}>No scans yet</Text>
           <Text style={styles.emptyText}>
-            Your backend-powered message and URL scan history will appear here.
+            Your scans will appear here after you analyze messages or URLs.
           </Text>
         </View>
       ) : (

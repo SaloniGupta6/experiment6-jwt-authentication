@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
+@RequestMapping("/api")   // ADD THIS LINE
+
 @CrossOrigin(origins = "*")
 public class AuthController {
 

@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import api from "../src/services/api";
+import { getUser } from "../src/utils/authStorage";
 
 const categories = [
   "Bank / OTP Scam",
@@ -46,7 +47,10 @@ export default function ReportScamScreen() {
     try {
       setLoading(true);
 
+      const user = await getUser();
+
       await api.post("/api/report-scam", {
+        userEmail: user?.email || "",
         content,
         numberOrLink,
         category,

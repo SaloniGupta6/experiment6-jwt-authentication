@@ -158,12 +158,12 @@ npm start
 Frontend will run at:
 http://localhost:3000
 
-https://experiment6-jwt-authentication.vercel.app
+https://scamguard-api.vercel.app
 
 ---
 
 ##DEPLOYED LINK
-https://experiment6-jwt-authentication.vercel.app 
+https://scamguard-api.vercel.app 
 
 # Learning Outcomes
 
