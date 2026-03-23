@@ -1,6 +1,7 @@
 package com.scamguard.backend.model;
 
 public class ScamReport {
+    private String userEmail;
     private String content;
     private String numberOrLink;
     private String category;
@@ -9,11 +10,20 @@ public class ScamReport {
     public ScamReport() {
     }
 
-    public ScamReport(String content, String numberOrLink, String category, String createdAt) {
+    public ScamReport(String userEmail, String content, String numberOrLink, String category, String createdAt) {
+        this.userEmail = userEmail;
         this.content = content;
         this.numberOrLink = numberOrLink;
         this.category = category;
         this.createdAt = createdAt;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public String getContent() {

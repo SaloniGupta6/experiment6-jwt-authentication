@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -26,8 +27,11 @@ public class UserDataController {
     }
 
     @GetMapping("/history")
-    public List<ScanRecord> getHistory() {
-        return scanHistory;
+    public List<ScanRecord> getHistory(@RequestParam String email) {
+        return scanHistory.stream()
+                .filter(item -> item.getUserEmail() != null &&
+                        item.getUserEmail().equalsIgnoreCase(email))
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/report-scam")
@@ -40,7 +44,10 @@ public class UserDataController {
     }
 
     @GetMapping("/reports")
-    public List<ScamReport> getReports() {
-        return scamReports;
+    public List<ScamReport> getReports(@RequestParam String email) {
+        return scamReports.stream()
+                .filter(item -> item.getUserEmail() != null &&
+                        item.getUserEmail().equalsIgnoreCase(email))
+                .collect(Collectors.toList());
     }
 }

@@ -1,6 +1,7 @@
 package com.scamguard.backend.model;
 
 public class ScanRecord {
+    private String userEmail;
     private String type;
     private String input;
     private String riskType;
@@ -11,13 +12,23 @@ public class ScanRecord {
     public ScanRecord() {
     }
 
-    public ScanRecord(String type, String input, String riskType, String scamProbability, String safetyAdvice, String createdAt) {
+    public ScanRecord(String userEmail, String type, String input, String riskType,
+                      String scamProbability, String safetyAdvice, String createdAt) {
+        this.userEmail = userEmail;
         this.type = type;
         this.input = input;
         this.riskType = riskType;
         this.scamProbability = scamProbability;
         this.safetyAdvice = safetyAdvice;
         this.createdAt = createdAt;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
 
     public String getType() {
