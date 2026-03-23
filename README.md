@@ -148,7 +148,7 @@ cd backend
 Backend will run at:
 http://localhost:8080
 
-https://scamguard-api.onrender.com 
+https://scamguard-api-y88x.onrender.com 
 
 ---
 
@@ -158,12 +158,12 @@ npm start
 Frontend will run at:
 http://localhost:3000
 
-https://scamguard-api.vercel.app
+https://scamguard-api-y88x.vercel.app
 
 ---
 
 ##DEPLOYED LINK
-https://scamguard-api.vercel.app 
+https://scamguard-api-y88x.vercel.app 
 
 # Learning Outcomes
 

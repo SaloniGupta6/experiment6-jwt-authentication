@@ -15,7 +15,7 @@ function App() {
     try {
 
       const res = await axios.post(
-        "https://scamguard-api.onrender.com/api/detect-scam",
+        "https://scamguard-api-y88x.onrender.com/api/detect-scam",
         { message: message }
       );
 
@@ -33,7 +33,7 @@ function App() {
     try {
 
       const res = await axios.post(
-        "https://scamguard-api.onrender.com/api/detect-url",
+        "https://scamguard-api-y88x.onrender.com/api/detect-url",
         { url: url }
       );
 
