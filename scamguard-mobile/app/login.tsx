@@ -26,7 +26,7 @@ export default function LoginScreen() {
     try {
       setLoading(true);
 
-      const res = await api.post("/login", { email, password });
+      const res = await api.post("/api/login", { email, password });
 
       await saveAuth(res.data.token, {
         email: res.data.email,

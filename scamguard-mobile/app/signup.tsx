@@ -27,7 +27,7 @@ export default function SignupScreen() {
     try {
       setLoading(true);
 
-      const res = await api.post("/signup", {
+      const res = await api.post("/api/signup", {
         name,
         email,
         password,
