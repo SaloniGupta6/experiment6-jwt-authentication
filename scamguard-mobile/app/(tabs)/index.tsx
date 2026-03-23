@@ -1,119 +1,166 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, Pressable, ScrollView, TouchableOpacity, Alert, Platform } from "react-native";
 import { router } from "expo-router";
+import { clearAuth } from "../../src/utils/authStorage";
+
+const cards = [
+  {
+    title: "Scan Message",
+    subtitle: "Check suspicious SMS, WhatsApp, or email text",
+    emoji: "📩",
+    route: "/message-scan",
+    color: "#65c66e",
+  },
+  {
+    title: "Scan URL",
+    subtitle: "Analyze suspicious links before opening them",
+    emoji: "🔗",
+    route: "/url-scan",
+    color: "#4f86f7",
+  },
+  {
+    title: "History",
+    subtitle: "See your previous scans and results",
+    emoji: "🕘",
+    route: "/history",
+    color: "#f59e0b",
+  },
+  {
+    title: "Report Scam",
+    subtitle: "Report scam messages, links, or numbers",
+    emoji: "🚨",
+    route: "/report-scam",
+    color: "#ef4444",
+  },
+  {
+    title: "Learn Scams",
+    subtitle: "Learn common fraud patterns and stay safe",
+    emoji: "🎓",
+    route: "/learn",
+    color: "#a855f7",
+  },
+];
 
 export default function HomeScreen() {
+  const handleLogout = async () => {
+    await clearAuth();
+
+    if (Platform.OS === "web") {
+      window.alert("Logged out successfully.");
+    } else {
+      Alert.alert("Logout", "Logged out successfully.");
+    }
+
+    router.replace("/login");
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>🛡</Text>
-      <Text style={styles.title}>ScamGuard AI</Text>
-      <Text style={styles.subtitle}>
-        Your personal AI safety assistant for scam messages, phishing links, and digital fraud.
-      </Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.topRow}>
+        <Text style={styles.title}>🛡 ScamGuard AI</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
 
-      <TouchableOpacity style={styles.primaryCard} onPress={() => router.push("/message-scan")}>
-        <Text style={styles.cardIcon}>📩</Text>
-        <View>
-          <Text style={styles.cardTitle}>Scan a Message</Text>
-          <Text style={styles.cardText}>Check SMS, WhatsApp, emails, and suspicious text.</Text>
-        </View>
-      </TouchableOpacity>
+      <Text style={styles.subtitle}>Your AI safety assistant</Text>
 
-      <TouchableOpacity style={styles.secondaryCard} onPress={() => router.push("/url-scan")}>
-        <Text style={styles.cardIcon}>🔗</Text>
-        <View>
-          <Text style={styles.cardTitle}>Scan a URL</Text>
-          <Text style={styles.cardText}>Detect phishing links and suspicious websites.</Text>
-        </View>
-      </TouchableOpacity>
-
-      <View style={styles.footerCard}>
-        <Text style={styles.footerTitle}>Why ScamGuard?</Text>
-        <Text style={styles.footerText}>
-          Built to help users stay safe from scams, fake offers, phishing attacks, and risky digital decisions.
+      <View style={styles.heroCard}>
+        <Text style={styles.heroTitle}>Stay safe from scams every day</Text>
+        <Text style={styles.heroText}>
+          Detect risky messages, suspicious links, and common fraud patterns in seconds.
         </Text>
       </View>
-    </View>
+
+      <View style={styles.grid}>
+        {cards.map((card) => (
+          <Pressable
+            key={card.title}
+            style={[styles.card, { borderColor: card.color }]}
+            onPress={() => router.push(card.route as any)}
+          >
+            <Text style={styles.cardEmoji}>{card.emoji}</Text>
+            <Text style={styles.cardTitle}>{card.title}</Text>
+            <Text style={styles.cardSubtitle}>{card.subtitle}</Text>
+          </Pressable>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#0f172a",
-    padding: 24,
-    justifyContent: "center",
+    flexGrow: 1,
+    backgroundColor: "#081735",
+    padding: 16,
   },
-  logo: {
-    fontSize: 54,
-    textAlign: "center",
-    marginBottom: 8,
+  topRow: {
+    marginTop: 24,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   title: {
-    color: "#ffffff",
-    fontSize: 34,
+    color: "#fff",
+    fontSize: 30,
     fontWeight: "800",
-    textAlign: "center",
+  },
+  logoutBtn: {
+    backgroundColor: "#ef4444",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "700",
   },
   subtitle: {
     color: "#cbd5e1",
-    textAlign: "center",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 12,
-    marginBottom: 36,
-  },
-  primaryCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 18,
-    flexDirection: "row",
-    gap: 14,
+    fontSize: 16,
+    marginTop: 6,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#334155",
   },
-  secondaryCard: {
-    backgroundColor: "#1e293b",
+  heroCard: {
+    backgroundColor: "#13233f",
     borderRadius: 18,
     padding: 18,
-    flexDirection: "row",
-    gap: 14,
-    marginBottom: 24,
+    marginBottom: 18,
     borderWidth: 1,
-    borderColor: "#334155",
+    borderColor: "#22395f",
   },
-  cardIcon: {
-    fontSize: 26,
-  },
-  cardTitle: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  cardText: {
-    color: "#cbd5e1",
-    fontSize: 14,
-    lineHeight: 20,
-    maxWidth: 250,
-  },
-  footerCard: {
-    backgroundColor: "#111827",
-    borderRadius: 18,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#1f2937",
-  },
-  footerTitle: {
-    color: "#ffffff",
-    fontSize: 17,
+  heroTitle: {
+    color: "#fff",
+    fontSize: 20,
     fontWeight: "700",
     marginBottom: 8,
   },
-  footerText: {
-    color: "#cbd5e1",
+  heroText: {
+    color: "#d1d5db",
     lineHeight: 22,
-    fontSize: 14,
+  },
+  grid: {
+    gap: 14,
+  },
+  card: {
+    backgroundColor: "#1e2b44",
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1.2,
+  },
+  cardEmoji: {
+    fontSize: 28,
+    marginBottom: 10,
+  },
+  cardTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  cardSubtitle: {
+    color: "#cbd5e1",
+    lineHeight: 20,
   },
 });

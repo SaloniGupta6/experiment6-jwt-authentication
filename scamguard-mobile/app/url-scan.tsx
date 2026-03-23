@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from "react-native";
+import { Text, TextInput, StyleSheet, ScrollView, Alert, View } from "react-native";
+import api from "../src/services/api";
 
 export default function UrlScan() {
   const [url, setUrl] = useState("");
@@ -7,94 +8,66 @@ export default function UrlScan() {
   const [loading, setLoading] = useState(false);
 
   const handleScan = async () => {
-    if (!url.trim()) return;
+    if (!url.trim()) {
+      Alert.alert("Input required", "Please enter a suspicious URL.");
+      return;
+    }
 
     try {
       setLoading(true);
-      setResult(null);
 
-      const response = await fetch(
-        "https://experiment6-jwt-authentication-1.onrender.com/api/detect-url",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ url }),
-        }
-      );
+      const res = await api.post("/api/detect-url", { url });
+      setResult(res.data);
 
-      const data = await response.json();
-      setResult(data);
-    } catch (error) {
-      setResult({
-        risk: "Unknown",
-        type: "Error",
+      await api.post("/api/save-scan", {
+        type: "url",
+        input: url,
+        riskType: res.data.riskType || "Unknown",
+        scamProbability: res.data.scamProbability || "N/A",
+        safetyAdvice: res.data.safetyAdvice || "No advice available.",
       });
+    } catch (err: any) {
+      console.log("URL API ERROR:", err?.response?.data || err.message);
+      Alert.alert("Error", "Could not connect to server.");
     } finally {
       setLoading(false);
     }
   };
 
-  const getRiskColor = () => {
-    if (!result?.risk) return "#94a3b8";
-
-    const value = result.risk.toLowerCase();
-
-    if (value.includes("high")) return "#ef4444";
-    if (value.includes("medium")) return "#f59e0b";
-    return "#22c55e";
-  };
-
-  const getAdvice = () => {
-    if (!result?.risk) return "";
-
-    const value = result.risk.toLowerCase();
-
-    if (value.includes("high")) {
-      return "Do not open this link. It may be phishing or malware.";
-    }
-    if (value.includes("medium")) {
-      return "This link looks suspicious. Verify the domain before opening.";
-    }
-    return "This URL appears safer, but still avoid unknown websites.";
-  };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>🔗 Scan Suspicious URL</Text>
-      <Text style={styles.subtitle}>
-        Paste any suspicious website or phishing link below.
+      <Text style={styles.heading}>🔗 Scan Suspicious URL</Text>
+      <Text style={styles.subheading}>
+        Paste any suspicious link below to check whether it looks risky.
       </Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Paste suspicious URL here..."
-        placeholderTextColor="#94a3b8"
         value={url}
         onChangeText={setUrl}
+        placeholder="Paste suspicious URL here..."
+        placeholderTextColor="#94a3b8"
+        autoCapitalize="none"
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleScan}>
-        <Text style={styles.buttonText}>Scan URL</Text>
-      </TouchableOpacity>
+      <Text style={styles.button} onPress={handleScan}>
+        {loading ? "Checking..." : "Scan URL"}
+      </Text>
 
-      {loading && <ActivityIndicator size="large" color="#3b82f6" style={{ marginTop: 20 }} />}
-
-      {result && !loading && (
+      {result && (
         <View style={styles.resultCard}>
           <Text style={styles.resultTitle}>URL Analysis</Text>
 
-          <Text style={styles.label}>Risk Level</Text>
-          <Text style={[styles.riskValue, { color: getRiskColor() }]}>
-            {result.risk || "Unknown"}
+          <Text style={styles.label}>RISK TYPE</Text>
+          <Text style={styles.value}>{result.riskType || "Unknown"}</Text>
+
+          <Text style={styles.label}>SCAM PROBABILITY</Text>
+          <Text style={styles.probability}>{result.scamProbability || "N/A"}</Text>
+
+          <Text style={styles.label}>SAFETY ADVICE</Text>
+          <Text style={styles.advice}>
+            {result.safetyAdvice || "No advice available."}
           </Text>
-
-          <Text style={styles.label}>Category</Text>
-          <Text style={styles.value}>{result.type || "Unknown"}</Text>
-
-          <Text style={styles.label}>Safety Advice</Text>
-          <Text style={styles.advice}>{getAdvice()}</Text>
         </View>
       )}
     </ScrollView>
@@ -104,77 +77,67 @@ export default function UrlScan() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#0f172a",
-    padding: 20,
+    backgroundColor: "#081735",
+    padding: 16,
   },
-  title: {
-    color: "#ffffff",
-    fontSize: 28,
-    fontWeight: "800",
+  heading: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "700",
     marginTop: 20,
     marginBottom: 10,
   },
-  subtitle: {
-    color: "#cbd5e1",
-    fontSize: 15,
-    marginBottom: 20,
-    lineHeight: 22,
+  subheading: {
+    color: "#d1d5db",
+    marginBottom: 16,
   },
   input: {
-    backgroundColor: "#1e293b",
-    color: "#ffffff",
-    padding: 18,
-    borderRadius: 16,
+    backgroundColor: "#1e2b44",
+    color: "#fff",
+    borderRadius: 14,
+    padding: 16,
     borderWidth: 1,
     borderColor: "#334155",
   },
   button: {
-    backgroundColor: "#3b82f6",
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    marginTop: 18,
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 16,
+    backgroundColor: "#4f86f7",
+    color: "#fff",
+    padding: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    textAlign: "center",
     fontWeight: "700",
   },
   resultCard: {
-    backgroundColor: "#1e293b",
-    borderRadius: 18,
-    padding: 18,
-    marginTop: 24,
-    borderWidth: 1,
-    borderColor: "#334155",
+    backgroundColor: "#1e2b44",
+    borderRadius: 14,
+    padding: 16,
+    marginTop: 20,
   },
   resultTitle: {
-    color: "#ffffff",
-    fontSize: 22,
-    fontWeight: "800",
-    marginBottom: 14,
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 12,
   },
   label: {
-    color: "#94a3b8",
-    fontSize: 13,
-    textTransform: "uppercase",
-    marginTop: 10,
+    color: "#9ca3af",
+    fontSize: 12,
+    marginTop: 8,
   },
   value: {
-    color: "#ffffff",
-    fontSize: 18,
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "600",
-    marginTop: 4,
   },
-  riskValue: {
-    fontSize: 30,
-    fontWeight: "800",
-    marginTop: 6,
+  probability: {
+    color: "#ff6b6b",
+    fontSize: 18,
+    fontWeight: "700",
   },
   advice: {
-    color: "#e2e8f0",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 6,
+    color: "#e5e7eb",
+    fontSize: 14,
+    marginTop: 4,
   },
 });
