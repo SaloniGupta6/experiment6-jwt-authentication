@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Text, TextInput, StyleSheet, ScrollView, Alert } from "react-native";
+import {
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { router } from "expo-router";
 import api from "../src/services/api";
 import PremiumResultCard from "../src/components/PremiumResultCard";
@@ -18,6 +25,7 @@ export default function UrlScan() {
 
     try {
       setLoading(true);
+      setResult(null);
 
       const res = await api.post("/api/detect-url", { url });
       setResult(res.data);
@@ -56,16 +64,19 @@ export default function UrlScan() {
         autoCapitalize="none"
       />
 
-      <Text style={styles.button} onPress={handleScan}>
-        {loading ? "Checking..." : "Scan URL"}
-      </Text>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleScan}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? "Scanning URL..." : "Scan URL"}
+        </Text>
+      </TouchableOpacity>
 
       {result && (
         <PremiumResultCard
-          riskType={result.riskType}
-          scamProbability={result.scamProbability}
-          safetyAdvice={result.safetyAdvice}
-          input={url}
+          result={result}
           onReport={() => router.push("/report-scam")}
         />
       )}
@@ -101,11 +112,17 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#4f86f7",
-    color: "#fff",
     padding: 16,
     marginTop: 16,
     borderRadius: 12,
-    textAlign: "center",
+    alignItems: "center",
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: "#fff",
     fontWeight: "800",
+    fontSize: 16,
   },
 });
