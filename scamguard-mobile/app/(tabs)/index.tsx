@@ -4,63 +4,50 @@ import {
   Text,
   View,
   StyleSheet,
-  Pressable,
   TouchableOpacity,
+  ActivityIndicator,
   Platform,
   Alert,
 } from "react-native";
 import { router } from "expo-router";
+import api from "../../src/services/api";
 import { clearAuth, getUser } from "../../src/utils/authStorage";
-
-const quickActions = [
-  {
-    title: "Scan Message",
-    subtitle: "Detect suspicious SMS, WhatsApp, or email text",
-    emoji: "📩",
-    route: "/message-scan",
-    color: "#65c66e",
-  },
-  {
-    title: "Scan URL",
-    subtitle: "Analyze links before opening them",
-    emoji: "🔗",
-    route: "/url-scan",
-    color: "#4f86f7",
-  },
-  {
-    title: "History",
-    subtitle: "Review previous scans and risk outcomes",
-    emoji: "🕘",
-    route: "/history",
-    color: "#f59e0b",
-  },
-  {
-    title: "Report Scam",
-    subtitle: "Report scam messages, links, or fraud numbers",
-    emoji: "🚨",
-    route: "/report-scam",
-    color: "#ef4444",
-  },
-  {
-    title: "Learn Scams",
-    subtitle: "Stay aware of common scam patterns",
-    emoji: "🎓",
-    route: "/learn",
-    color: "#a855f7",
-  },
-];
 
 export default function HomeScreen() {
   const [user, setUser] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
-      const savedUser = await getUser();
-      setUser(savedUser);
-    };
-
-    loadUser();
+    loadDashboard();
   }, []);
+
+  const loadDashboard = async () => {
+    try {
+      setLoading(true);
+
+      const currentUser = await getUser();
+      setUser(currentUser);
+
+      if (!currentUser?.email) {
+        setLoading(false);
+        return;
+      }
+
+      const [historyRes, reportsRes] = await Promise.all([
+        api.get(`/api/history?email=${encodeURIComponent(currentUser.email)}`),
+        api.get(`/api/reports?email=${encodeURIComponent(currentUser.email)}`),
+      ]);
+
+      setHistory(historyRes.data || []);
+      setReports(reportsRes.data || []);
+    } catch (error: any) {
+      console.log("DASHBOARD LOAD ERROR:", error?.response?.data || error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     await clearAuth();
@@ -74,9 +61,34 @@ export default function HomeScreen() {
     router.replace("/login");
   };
 
+  const totalScans = history.length;
+  const riskyScans = history.filter(
+    (item) =>
+      item?.scamProbability &&
+      parseInt(String(item.scamProbability).replace("%", "")) >= 50
+  ).length;
+
+  const linksChecked = history.filter((item) => item?.type === "url").length;
+  const messagesChecked = history.filter((item) => item?.type === "message").length;
+
+  const mostCommonScamType =
+    history.length > 0
+      ? Object.entries(
+          history.reduce((acc: Record<string, number>, item: any) => {
+            const type = item?.riskType || "Unknown";
+            acc[type] = (acc[type] || 0) + 1;
+            return acc;
+          }, {})
+        ).sort((a: any, b: any) => b[1] - a[1])[0][0]
+      : "No data yet";
+
+  const safetyScore = Math.max(0, 100 - riskyScans * 10);
+
+  const recentActivity = history.slice(0, 3);
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.topRow}>
+      <View style={styles.headerRow}>
         <View>
           <Text style={styles.greeting}>
             Welcome back{user?.name ? `, ${user.name}` : ""}
@@ -89,55 +101,136 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.subtitle}>Your premium AI safety assistant</Text>
+      <Text style={styles.subtitle}>
+        Your personal scam protection dashboard
+      </Text>
 
-      <View style={styles.heroCard}>
-        <Text style={styles.heroTitle}>Today’s Protection Status</Text>
-        <Text style={styles.heroText}>
-          ScamGuard helps you detect risky messages, suspicious links, and fraud patterns in seconds.
-        </Text>
-
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>94%</Text>
-            <Text style={styles.statLabel}>Detection Confidence</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber}>24/7</Text>
-            <Text style={styles.statLabel}>Safety Assistance</Text>
-          </View>
+      {loading ? (
+        <View style={styles.loaderWrap}>
+          <ActivityIndicator size="large" color="#65c66e" />
+          <Text style={styles.loaderText}>Loading dashboard...</Text>
         </View>
-      </View>
+      ) : (
+        <>
+          <View style={styles.heroCard}>
+            <Text style={styles.heroTitle}>Weekly Safety Score</Text>
+            <Text
+              style={[
+                styles.heroScore,
+                {
+                  color:
+                    safetyScore >= 80
+                      ? "#22c55e"
+                      : safetyScore >= 50
+                      ? "#f59e0b"
+                      : "#ef4444",
+                },
+              ]}
+            >
+              {safetyScore}/100
+            </Text>
+            <Text style={styles.heroText}>
+              {riskyScans === 0
+                ? "Great job. No high-risk scans detected recently."
+                : `You detected ${riskyScans} risky scan${
+                    riskyScans > 1 ? "s" : ""
+                  } recently. Stay cautious.`}
+            </Text>
+          </View>
 
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
-      <View style={styles.grid}>
-        {quickActions.map((item) => (
-          <Pressable
-            key={item.title}
-            style={[styles.card, { borderColor: item.color }]}
-            onPress={() => router.push(item.route as any)}
-          >
-            <Text style={styles.cardEmoji}>{item.emoji}</Text>
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
-          </Pressable>
-        ))}
-      </View>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{totalScans}</Text>
+              <Text style={styles.statLabel}>Total Scans</Text>
+            </View>
 
-      <Text style={styles.sectionTitle}>Safety Tips</Text>
-      <View style={styles.tipCard}>
-        <Text style={styles.tipTitle}>Never share OTP, PIN, or banking passwords</Text>
-        <Text style={styles.tipText}>
-          Legitimate banks and payment apps never ask for your OTP or PIN over call, SMS, or chat.
-        </Text>
-      </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{linksChecked}</Text>
+              <Text style={styles.statLabel}>Links Checked</Text>
+            </View>
 
-      <View style={styles.tipCard}>
-        <Text style={styles.tipTitle}>Always verify suspicious links</Text>
-        <Text style={styles.tipText}>
-          If a message pressures you to click immediately, verify the sender and domain before acting.
-        </Text>
-      </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{messagesChecked}</Text>
+              <Text style={styles.statLabel}>Messages Checked</Text>
+            </View>
+
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{reports.length}</Text>
+              <Text style={styles.statLabel}>Reports Submitted</Text>
+            </View>
+          </View>
+
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionGrid}>
+            <TouchableOpacity
+              style={[styles.actionCard, { borderColor: "#65c66e" }]}
+              onPress={() => router.push("/message-scan")}
+            >
+              <Text style={styles.actionEmoji}>📩</Text>
+              <Text style={styles.actionTitle}>Scan Message</Text>
+              <Text style={styles.actionSubtitle}>Check suspicious texts</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionCard, { borderColor: "#4f86f7" }]}
+              onPress={() => router.push("/url-scan")}
+            >
+              <Text style={styles.actionEmoji}>🔗</Text>
+              <Text style={styles.actionTitle}>Scan URL</Text>
+              <Text style={styles.actionSubtitle}>Check suspicious links</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionCard, { borderColor: "#f59e0b" }]}
+              onPress={() => router.push("/history")}
+            >
+              <Text style={styles.actionEmoji}>🕘</Text>
+              <Text style={styles.actionTitle}>History</Text>
+              <Text style={styles.actionSubtitle}>View past scans</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionCard, { borderColor: "#ef4444" }]}
+              onPress={() => router.push("/report-scam")}
+            >
+              <Text style={styles.actionEmoji}>🚨</Text>
+              <Text style={styles.actionTitle}>Report Scam</Text>
+              <Text style={styles.actionSubtitle}>Help protect others</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={styles.sectionTitle}>Most Common Risk Type</Text>
+          <View style={styles.infoCard}>
+            <Text style={styles.infoValue}>{mostCommonScamType}</Text>
+            <Text style={styles.infoText}>
+              This is the most frequent scam pattern in your recent scan activity.
+            </Text>
+          </View>
+
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          {recentActivity.length === 0 ? (
+            <View style={styles.infoCard}>
+              <Text style={styles.infoText}>
+                No recent scans yet. Start by scanning a message or URL.
+              </Text>
+            </View>
+          ) : (
+            recentActivity.map((item, index) => (
+              <View key={`${item.createdAt}-${index}`} style={styles.activityCard}>
+                <Text style={styles.activityType}>
+                  {item.type === "message" ? "MESSAGE SCAN" : "URL SCAN"}
+                </Text>
+                <Text style={styles.activityInput} numberOfLines={2}>
+                  {item.input}
+                </Text>
+                <Text style={styles.activityRisk}>
+                  {item.riskType} • {item.scamProbability}
+                </Text>
+              </View>
+            ))
+          )}
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -147,8 +240,9 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "#081735",
     padding: 16,
+    paddingBottom: 30,
   },
-  topRow: {
+  headerRow: {
     marginTop: 24,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -164,6 +258,12 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "800",
   },
+  subtitle: {
+    color: "#cbd5e1",
+    fontSize: 16,
+    marginTop: 6,
+    marginBottom: 16,
+  },
   logoutBtn: {
     backgroundColor: "#ef4444",
     paddingHorizontal: 14,
@@ -174,11 +274,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
   },
-  subtitle: {
+  loaderWrap: {
+    marginTop: 40,
+    alignItems: "center",
+  },
+  loaderText: {
     color: "#cbd5e1",
-    fontSize: 16,
-    marginTop: 6,
-    marginBottom: 16,
+    marginTop: 10,
   },
   heroCard: {
     backgroundColor: "#13233f",
@@ -190,24 +292,32 @@ const styles = StyleSheet.create({
   },
   heroTitle: {
     color: "#fff",
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  heroScore: {
+    fontSize: 36,
+    fontWeight: "900",
+    marginTop: 8,
   },
   heroText: {
     color: "#d1d5db",
     lineHeight: 22,
-    marginBottom: 16,
+    marginTop: 10,
   },
-  statsRow: {
+  statsGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 12,
+    marginBottom: 20,
   },
-  statBox: {
-    flex: 1,
-    backgroundColor: "#1a2d4d",
+  statCard: {
+    width: "47%",
+    backgroundColor: "#12233f",
     borderRadius: 16,
-    padding: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#22395f",
   },
   statNumber: {
     color: "#65c66e",
@@ -216,7 +326,7 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     color: "#cbd5e1",
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 13,
   },
   sectionTitle: {
@@ -224,47 +334,72 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
     marginBottom: 12,
+    marginTop: 4,
   },
-  grid: {
-    gap: 14,
+  actionGrid: {
+    gap: 12,
     marginBottom: 20,
   },
-  card: {
+  actionCard: {
     backgroundColor: "#12233f",
     borderRadius: 18,
     padding: 18,
     borderWidth: 1.2,
   },
-  cardEmoji: {
+  actionEmoji: {
     fontSize: 28,
     marginBottom: 10,
   },
-  cardTitle: {
+  actionTitle: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "800",
     marginBottom: 6,
   },
-  cardSubtitle: {
+  actionSubtitle: {
     color: "#cbd5e1",
     lineHeight: 20,
   },
-  tipCard: {
+  infoCard: {
     backgroundColor: "#12233f",
     borderRadius: 18,
     padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#22395f",
+  },
+  infoValue: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    marginBottom: 8,
+  },
+  infoText: {
+    color: "#d1d5db",
+    lineHeight: 22,
+  },
+  activityCard: {
+    backgroundColor: "#12233f",
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: "#22395f",
   },
-  tipTitle: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 6,
+  activityType: {
+    color: "#94a3b8",
+    fontSize: 12,
+    marginBottom: 8,
   },
-  tipText: {
-    color: "#d1d5db",
-    lineHeight: 22,
+  activityInput: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+    marginBottom: 8,
+  },
+  activityRisk: {
+    color: "#f59e0b",
+    fontSize: 13,
+    fontWeight: "700",
   },
 });
