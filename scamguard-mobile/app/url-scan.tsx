@@ -28,6 +28,7 @@ export default function UrlScan() {
       setResult(null);
 
       const res = await api.post("/api/detect-url", { url });
+      console.log("URL RESULT:", res.data);
       setResult(res.data);
 
       const user = await getUser();

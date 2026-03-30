@@ -1,9 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const TOKEN_KEY = "scamguard_auth_token";
-const USER_KEY = "scamguard_auth_user";
+const TOKEN_KEY = "auth_token";
+const USER_KEY = "auth_user";
 
-export async function saveAuth(token: string, user: any) {
+export async function saveAuth(token: string, user: { email: string; name?: string }) {
   await AsyncStorage.setItem(TOKEN_KEY, token);
   await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
 }

@@ -1,7 +1,28 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Platform,
+} from "react-native";
 
-export default function PremiumResultCard({ result, onReport }: any) {
+type ScanResult = {
+  riskType: string;
+  scamProbability: string;
+  severity?: string;
+  safetyAdvice: string;
+  recommendedAction?: string;
+  reasons?: string[];
+};
+
+type Props = {
+  result: ScanResult;
+  onReport: () => void;
+};
+
+export default function PremiumResultCard({ result, onReport }: Props) {
   const getColor = () => {
     if (result?.severity === "danger") return "#ef4444";
     if (result?.severity === "warning") return "#f59e0b";
@@ -9,10 +30,12 @@ export default function PremiumResultCard({ result, onReport }: any) {
   };
 
   const handleCopyAdvice = () => {
-    const text = `Risk Type: ${result?.riskType}\nScam Probability: ${result?.scamProbability}\nAdvice: ${result?.safetyAdvice}`;
+    const text = `Risk Type: ${result.riskType}
+Scam Probability: ${result.scamProbability}
+Advice: ${result.safetyAdvice}`;
 
     if (Platform.OS === "web") {
-      window.alert(`Copy this manually:\n\n${text}`);
+      window.alert(text);
     } else {
       Alert.alert("Advice", text);
     }
@@ -21,32 +44,39 @@ export default function PremiumResultCard({ result, onReport }: any) {
   return (
     <View style={[styles.card, { borderColor: getColor() }]}>
       <Text style={[styles.riskType, { color: getColor() }]}>
-        {result?.riskType}
+        {result.riskType}
       </Text>
 
       <Text style={styles.probability}>
-        {result?.scamProbability} SCAM RISK
+        {result.scamProbability} SCAM RISK
       </Text>
 
-      <Text style={styles.heading}>Why this was flagged:</Text>
-      {result?.reasons?.map((reason: string, index: number) => (
-        <Text key={index} style={styles.reason}>
-          • {reason}
-        </Text>
-      ))}
+      {result.reasons?.length ? (
+        <>
+          <Text style={styles.heading}>Why this was flagged:</Text>
+          {result.reasons.map((reason: string, index: number) => (
+            <Text key={index} style={styles.reason}>
+              • {reason}
+            </Text>
+          ))}
+        </>
+      ) : null}
 
       <Text style={styles.heading}>What to do now:</Text>
-      <Text style={styles.advice}>{result?.safetyAdvice}</Text>
+      <Text style={styles.advice}>{result.safetyAdvice}</Text>
 
-      {result?.recommendedAction ? (
+      {result.recommendedAction && (
         <>
           <Text style={styles.heading}>Recommended Action:</Text>
           <Text style={styles.action}>{result.recommendedAction}</Text>
         </>
-      ) : null}
+      )}
 
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleCopyAdvice}>
+        <TouchableOpacity
+          style={styles.secondaryButton}
+          onPress={handleCopyAdvice}
+        >
           <Text style={styles.secondaryButtonText}>Copy Advice</Text>
         </TouchableOpacity>
 
@@ -88,35 +118,33 @@ const styles = StyleSheet.create({
   advice: {
     color: "#22c55e",
     marginTop: 6,
-    lineHeight: 22,
   },
   action: {
     color: "#e5e7eb",
     marginTop: 6,
-    lineHeight: 22,
   },
   buttonRow: {
     flexDirection: "row",
-    gap: 10,
     marginTop: 18,
   },
   secondaryButton: {
     flex: 1,
     backgroundColor: "#1e293b",
-    paddingVertical: 12,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: "center",
+    marginRight: 8,
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: "#ef4444",
+    padding: 12,
     borderRadius: 12,
     alignItems: "center",
   },
   secondaryButtonText: {
     color: "#fff",
     fontWeight: "700",
-  },
-  primaryButton: {
-    flex: 1,
-    backgroundColor: "#ef4444",
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
   },
   primaryButtonText: {
     color: "#fff",

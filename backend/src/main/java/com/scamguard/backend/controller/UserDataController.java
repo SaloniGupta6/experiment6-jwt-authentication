@@ -7,7 +7,9 @@ import com.scamguard.backend.repository.ScamReportRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -34,6 +36,15 @@ public class UserDataController {
     @GetMapping("/history")
     public List<ScanRecord> getHistory(@RequestParam String email) {
         return scanRecordRepository.findByUserEmailIgnoreCaseOrderByIdDesc(email);
+    }
+
+    @DeleteMapping("/history")
+    public Map<String, String> clearHistory(@RequestParam String email) {
+        scanRecordRepository.deleteByUserEmailIgnoreCase(email);
+
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "History cleared successfully");
+        return response;
     }
 
     @PostMapping("/report-scam")

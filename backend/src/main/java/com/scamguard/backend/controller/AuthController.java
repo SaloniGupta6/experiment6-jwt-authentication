@@ -10,8 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")   // ADD THIS LINE
-
+@RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class AuthController {
 
@@ -25,7 +24,6 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<Map<String, String>> signup(@RequestBody User user) {
-
         Map<String, String> response = new HashMap<>();
 
         if (user.getName() == null || user.getName().trim().isEmpty() ||
@@ -55,7 +53,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> request) {
-
         String email = request.get("email");
         String password = request.get("password");
 
@@ -81,6 +78,21 @@ public class AuthController {
 
         response.put("error", "Invalid email or password");
         return ResponseEntity.status(401).body(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+
+        Map<String, String> response = new HashMap<>();
+
+        if (email == null || email.trim().isEmpty()) {
+            response.put("error", "Email is required");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.put("message", "If this email is registered, password reset instructions will be sent.");
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/protected")

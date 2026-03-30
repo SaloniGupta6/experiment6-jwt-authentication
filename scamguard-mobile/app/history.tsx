@@ -6,17 +6,30 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Platform,
 } from "react-native";
 import { useFocusEffect } from "expo-router";
 import api from "../src/services/api";
 import { getUser } from "../src/utils/authStorage";
 
+type HistoryItem = {
+  id?: number;
+  userEmail?: string;
+  type: "message" | "url" | string;
+  input: string;
+  riskType: string;
+  scamProbability: string;
+  safetyAdvice: string;
+  createdAt: string;
+};
+
 export default function HistoryScreen() {
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const loadHistory = async () => {
     try {
+      setLoading(true);
+
       const user = await getUser();
 
       if (!user?.email) {
@@ -24,13 +37,16 @@ export default function HistoryScreen() {
         return;
       }
 
-      const res = await api.get("/api/history", {
-        params: { email: user.email },
-      });
+      const res = await api.get(
+        `/api/history?email=${encodeURIComponent(user.email)}`
+      );
 
-      setHistory(res.data || []);
+      setHistory(Array.isArray(res.data) ? res.data : []);
     } catch (error: any) {
-      console.log("HISTORY API ERROR:", error?.response?.data || error.message);
+      console.log("HISTORY LOAD ERROR:", error?.response?.data || error.message);
+      Alert.alert("Error", "Could not load history.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,12 +56,42 @@ export default function HistoryScreen() {
     }, [])
   );
 
-  const handleClear = () => {
-    if (Platform.OS === "web") {
-      window.alert("User-specific clear is not implemented yet.");
-    } else {
-      Alert.alert("Info", "User-specific clear is not implemented yet.");
+  const clearHistoryNow = async () => {
+    try {
+      const user = await getUser();
+
+      if (!user?.email) {
+        Alert.alert("Error", "No logged-in user found.");
+        return;
+      }
+
+      await api.delete(`/api/history?email=${encodeURIComponent(user.email)}`);
+      setHistory([]);
+      Alert.alert("Done", "History cleared successfully.");
+    } catch (error: any) {
+      console.log("CLEAR HISTORY ERROR:", error?.response?.data || error.message);
+      Alert.alert("Error", "Could not clear history.");
     }
+  };
+
+  const handleClear = () => {
+    if (history.length === 0) {
+      Alert.alert("No History", "There is nothing to clear.");
+      return;
+    }
+
+    Alert.alert(
+      "Clear History",
+      "Are you sure you want to clear your scan history?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear",
+          style: "destructive",
+          onPress: clearHistoryNow,
+        },
+      ]
+    );
   };
 
   return (
@@ -53,16 +99,25 @@ export default function HistoryScreen() {
       <View style={styles.headerRow}>
         <Text style={styles.title}>🕘 Your Scan History</Text>
 
-        <TouchableOpacity style={styles.clearBtn} onPress={handleClear}>
+        <TouchableOpacity
+          style={[styles.clearBtn, history.length === 0 && styles.clearBtnDisabled]}
+          onPress={handleClear}
+          disabled={history.length === 0}
+        >
           <Text style={styles.clearBtnText}>Clear</Text>
         </TouchableOpacity>
       </View>
 
-      {history.length === 0 ? (
+      {loading ? (
         <View style={styles.emptyCard}>
-          <Text style={styles.emptyTitle}>No scans yet</Text>
+          <Text style={styles.emptyTitle}>Loading...</Text>
+          <Text style={styles.emptyText}>Fetching your scan history.</Text>
+        </View>
+      ) : history.length === 0 ? (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>No scan history found</Text>
           <Text style={styles.emptyText}>
-            Your scans will appear here after you analyze messages or URLs.
+            Your message and URL scans will appear here.
           </Text>
         </View>
       ) : (
@@ -117,15 +172,20 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 10,
   },
+  clearBtnDisabled: {
+    opacity: 0.5,
+  },
   clearBtnText: {
     color: "#fff",
     fontWeight: "700",
     fontSize: 14,
   },
   emptyCard: {
-    backgroundColor: "#1e2b44",
-    borderRadius: 16,
+    backgroundColor: "#12233f",
+    borderRadius: 18,
     padding: 20,
+    borderWidth: 1,
+    borderColor: "#22395f",
   },
   emptyTitle: {
     color: "#fff",
@@ -138,15 +198,18 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   card: {
-    backgroundColor: "#1e2b44",
-    borderRadius: 16,
+    backgroundColor: "#12233f",
+    borderRadius: 18,
     padding: 16,
     marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#22395f",
   },
   badge: {
     color: "#94a3b8",
     fontSize: 12,
     marginBottom: 8,
+    fontWeight: "700",
   },
   input: {
     color: "#fff",
@@ -158,6 +221,7 @@ const styles = StyleSheet.create({
     color: "#9ca3af",
     fontSize: 12,
     marginTop: 8,
+    fontWeight: "700",
   },
   value: {
     color: "#fff",
@@ -173,6 +237,7 @@ const styles = StyleSheet.create({
     color: "#e5e7eb",
     fontSize: 14,
     marginTop: 4,
+    lineHeight: 21,
   },
   time: {
     color: "#94a3b8",
