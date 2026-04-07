@@ -34,6 +34,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/history").permitAll()
+
+                        // Exp 7 public route
+                        .requestMatchers("/api/public/**").permitAll()
+
+                        // Exp 7 user route
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+
+                        // Exp 7 admin route
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Existing ScamGuard endpoints
                         .requestMatchers(
                                 "/",
                                 "/api/signup",
@@ -47,6 +58,7 @@ public class SecurityConfig {
                                 "/protected",
                                 "/logout"
                         ).permitAll()
+
                         .anyRequest().authenticated()
                 );
 

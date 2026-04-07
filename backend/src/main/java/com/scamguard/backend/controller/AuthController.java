@@ -39,6 +39,10 @@ public class AuthController {
             return ResponseEntity.status(409).body(response);
         }
 
+        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+            user.setRole("ROLE_USER");
+        }
+
         userStoreService.saveUser(user);
 
         String token = jwtUtil.generateToken(user.getEmail());
@@ -47,6 +51,7 @@ public class AuthController {
         response.put("token", token);
         response.put("email", user.getEmail());
         response.put("name", user.getName());
+        response.put("role", user.getRole());
 
         return ResponseEntity.ok(response);
     }
@@ -72,6 +77,7 @@ public class AuthController {
             response.put("token", token);
             response.put("email", existingUser.getEmail());
             response.put("name", existingUser.getName());
+            response.put("role", existingUser.getRole());
 
             return ResponseEntity.ok(response);
         }
