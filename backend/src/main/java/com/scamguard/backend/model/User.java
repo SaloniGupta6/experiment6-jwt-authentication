@@ -20,7 +20,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private String role = "ROLE_USER";
 
     public User() {
     }
@@ -29,7 +29,7 @@ public class User {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.role = (role == null || role.trim().isEmpty()) ? "ROLE_USER" : role;
     }
 
     public Long getId() {
@@ -65,6 +65,6 @@ public class User {
     }
 
     public void setRole(String role) {
-        this.role = role;
+        this.role = (role == null || role.trim().isEmpty()) ? "ROLE_USER" : role;
     }
 }
