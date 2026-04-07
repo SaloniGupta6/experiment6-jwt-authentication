@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ScanRecordRepository extends JpaRepository<ScanRecord, Long> {
     List<ScanRecord> findByUserEmailIgnoreCaseOrderByIdDesc(String userEmail);
-    void deleteByUserEmailIgnoreCase(String userEmail);
+    List<ScanRecord> findByUserEmailIgnoreCase(String userEmail);
 }

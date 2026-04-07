@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
 import { useFocusEffect } from "expo-router";
 import api from "../src/services/api";
@@ -31,6 +32,7 @@ export default function HistoryScreen() {
       setLoading(true);
 
       const user = await getUser();
+      console.log("LOAD HISTORY USER:", user);
 
       if (!user?.email) {
         setHistory([]);
@@ -41,10 +43,18 @@ export default function HistoryScreen() {
         `/api/history?email=${encodeURIComponent(user.email)}`
       );
 
+      console.log("LOAD HISTORY RESPONSE:", res.data);
       setHistory(Array.isArray(res.data) ? res.data : []);
     } catch (error: any) {
-      console.log("HISTORY LOAD ERROR:", error?.response?.data || error.message);
-      Alert.alert("Error", "Could not load history.");
+      console.log("HISTORY LOAD ERROR FULL:", error);
+      console.log("HISTORY LOAD ERROR RESPONSE:", error?.response?.data);
+      console.log("HISTORY LOAD ERROR MESSAGE:", error?.message);
+
+      if (Platform.OS === "web") {
+        window.alert("Could not load history.");
+      } else {
+        Alert.alert("Error", "Could not load history.");
+      }
     } finally {
       setLoading(false);
     }
@@ -59,24 +69,65 @@ export default function HistoryScreen() {
   const clearHistoryNow = async () => {
     try {
       const user = await getUser();
+      console.log("CLEAR HISTORY USER:", user);
 
       if (!user?.email) {
-        Alert.alert("Error", "No logged-in user found.");
+        if (Platform.OS === "web") {
+          window.alert("No logged-in user found.");
+        } else {
+          Alert.alert("Error", "No logged-in user found.");
+        }
         return;
       }
 
-      await api.delete(`/api/history?email=${encodeURIComponent(user.email)}`);
-      setHistory([]);
-      Alert.alert("Done", "History cleared successfully.");
+      const url = `/api/history?email=${encodeURIComponent(user.email)}`;
+      console.log("DELETE URL:", `${api.defaults.baseURL}${url}`);
+
+      const res = await api.request({
+        url,
+        method: "DELETE",
+      });
+
+      console.log("CLEAR HISTORY RESPONSE:", res.data);
+
+      await loadHistory();
+
+      if (Platform.OS === "web") {
+        window.alert("History cleared successfully.");
+      } else {
+        Alert.alert("Done", "History cleared successfully.");
+      }
     } catch (error: any) {
-      console.log("CLEAR HISTORY ERROR:", error?.response?.data || error.message);
-      Alert.alert("Error", "Could not clear history.");
+      console.log("CLEAR HISTORY ERROR FULL:", error);
+      console.log("CLEAR HISTORY ERROR RESPONSE:", error?.response?.data);
+      console.log("CLEAR HISTORY ERROR STATUS:", error?.response?.status);
+      console.log("CLEAR HISTORY ERROR MESSAGE:", error?.message);
+
+      if (Platform.OS === "web") {
+        window.alert("Could not clear history.");
+      } else {
+        Alert.alert("Error", "Could not clear history.");
+      }
     }
   };
 
   const handleClear = () => {
     if (history.length === 0) {
-      Alert.alert("No History", "There is nothing to clear.");
+      if (Platform.OS === "web") {
+        window.alert("There is nothing to clear.");
+      } else {
+        Alert.alert("No History", "There is nothing to clear.");
+      }
+      return;
+    }
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        "Are you sure you want to clear your scan history?"
+      );
+      if (confirmed) {
+        clearHistoryNow();
+      }
       return;
     }
 

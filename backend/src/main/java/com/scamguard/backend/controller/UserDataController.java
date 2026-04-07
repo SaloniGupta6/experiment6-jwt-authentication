@@ -4,6 +4,7 @@ import com.scamguard.backend.model.ScanRecord;
 import com.scamguard.backend.model.ScamReport;
 import com.scamguard.backend.repository.ScanRecordRepository;
 import com.scamguard.backend.repository.ScamReportRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -38,12 +39,20 @@ public class UserDataController {
         return scanRecordRepository.findByUserEmailIgnoreCaseOrderByIdDesc(email);
     }
 
+    @Transactional
     @DeleteMapping("/history")
-    public Map<String, String> clearHistory(@RequestParam String email) {
-        scanRecordRepository.deleteByUserEmailIgnoreCase(email);
+    public Map<String, Object> clearHistory(@RequestParam String email) {
+        List<ScanRecord> records = scanRecordRepository.findByUserEmailIgnoreCase(email);
+        int deletedCount = records.size();
 
-        Map<String, String> response = new HashMap<>();
+        if (!records.isEmpty()) {
+            scanRecordRepository.deleteAll(records);
+        }
+
+        Map<String, Object> response = new HashMap<>();
         response.put("message", "History cleared successfully");
+        response.put("deletedCount", deletedCount);
+        response.put("email", email);
         return response;
     }
 
