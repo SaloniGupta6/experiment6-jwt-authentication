@@ -45,7 +45,7 @@ public class AuthController {
 
         userStoreService.saveUser(user);
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
 
         response.put("message", "Signup successful");
         response.put("token", token);
@@ -71,7 +71,7 @@ public class AuthController {
         User existingUser = userStoreService.findByEmail(email);
 
         if (existingUser != null && existingUser.getPassword().equals(password)) {
-            String token = jwtUtil.generateToken(existingUser.getEmail());
+            String token = jwtUtil.generateToken(existingUser.getEmail(), existingUser.getRole());
 
             response.put("message", "Login successful");
             response.put("token", token);
