@@ -140,6 +140,98 @@ Authorization: Bearer
 
 ---
 
+📌 ScamGuard Backend – Experiment 7 (RBAC Implementation)
+
+⸻
+
+🎯 Objective
+
+To implement Role-Based Authorization (RBAC) using Spring Boot and Spring Security with JWT authentication.
+
+⸻
+
+🚀 Features
+
+🔐 Authentication
+	•	User Signup (/api/signup)
+	•	User Login (/api/login)
+	•	JWT Token generation
+	•	Stateless authentication
+
+⸻
+
+🛡️ Authorization (RBAC)
+
+Roles implemented:
+	•	ROLE_USER
+	•	ROLE_ADMIN
+
+⸻
+
+🔑 API Access Control
+Endpoint
+Access
+/api/public/hello
+Public
+/api/user/profile
+USER, ADMIN
+/api/admin/dashboard
+ADMIN only
+
+⚙️ Security Implementation
+	•	Spring Security configured using SecurityFilterChain
+	•	Custom JWT Filter (JwtFilter)
+	•	Role extracted from JWT token
+
+  🔄 JWT Implementation
+	•	Token contains:
+	•	Email (subject)
+	•	Role (claim)
+	•	Token validated on every request
+	•	SecurityContext updated dynamically
+
+🧪 Postman Testing
+
+✅ Public Endpoint
+GET /api/public/hello
+✔ 200 OK (No authentication)
+✅ Signup
+POST /api/signup
+✔ User created
+✔ Role assigned: ROLE_USER
+✔ Token generated
+✅ Login
+POST /api/login
+✔ Returns JWT token
+✅ USER → USER Endpoint
+GET /api/user/profile
+✔ 200 OK
+❌ USER → ADMIN Endpoint
+GET /api/admin/dashboard
+✔ 403 Forbidden
+❌ Without Token
+GET /api/user/profile
+✔ 401 Unauthorized
+
+🗄️ Database
+	•	PostgreSQL (Render)
+	•	Users table contains:
+	•	id
+	•	name
+	•	email
+	•	password
+	•	role
+
+  🎯 FINAL RESULT
+
+✔ Authentication working
+✔ RBAC working
+✔ 401 & 403 handled
+✔ Deployed on Render
+✔ Tested using Postman
+
+
+
 # How to Run the Project
 
 ## Backend
