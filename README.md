@@ -1,4 +1,4 @@
-# ScamGuard AI – JWT Authentication Backend
+# ScamGuard AI – JWT Authentication Backend + Frontend
 
 This project demonstrates **JWT (JSON Web Token) authentication using Spring Boot** as part of **Experiment 6**.
 
