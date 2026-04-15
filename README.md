@@ -244,6 +244,53 @@ https://scamguard-api-y88x.onrender.com
 
 ---
 
+🧪 Experiment 8 – Frontend JWT Integration
+
+🎯 Objective
+
+To build a React frontend that integrates with JWT APIs and implements session-based authentication.
+
+⸻
+
+⚙️ Tech Stack
+	•	React.js
+	•	Axios
+	•	Bootstrap / Material UI
+	•	Browser sessionStorage
+
+⸻
+
+💻 Features Implemented
+
+✅ Login Page
+	•	User enters email & password
+	•	Calls:
+	POST /api/login
+		•	On success:
+		sessionStorage.setItem("token", token);
+✅ Protected Dashboard
+	•	Only accessible if token exists
+	•	Calls:
+	GET /api/user/profile
+		•	Sends:
+		Authorization: Bearer <token>
+✅ Session-Based Authentication
+	•	Token stored in:
+	sessionStorage
+	•	Page refresh → session persists
+	•	No token → redirect to login
+
+⸻
+
+✅ Logout Functionality
+sessionStorage.removeItem("token");
+📸 Frontend Screenshots
+	•	✅ Login UI
+	•	✅ Token stored in sessionStorage (DevTools)
+	•	✅ Protected API data displayed
+	•	✅ Unauthorized redirect
+	•	✅ Logout working
+
 ## Frontendcd frontend
 npm install
 npm start
